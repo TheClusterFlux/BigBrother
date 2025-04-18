@@ -1,0 +1,13 @@
+<div class="slide-panel" [class.closed]="isPanelClosed">
+    <div class="user-info" *ngIf="currentUser">
+      <div class="header">
+        <img [src]="currentUser.avatar_url" alt="User avatar" />
+        <h2>{{ currentUser.display_name }}</h2>
+      </div>
+      <ul>
+        <li>{{ currentUser.status }}</li>
+        <li>{{ currentUser.presence }}</li>
+        <li>{{ currentUser.id }}</li>
+      </ul>
+    </div>
+  </div>

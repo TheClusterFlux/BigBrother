@@ -1,53 +1,27 @@
-# new-project-template
+# BigBrother
 
-## Deployment YAML Generator
+This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 14.0.0.
 
-This project includes a Bash script (`init.sh`) to help you quickly generate Kubernetes deployment YAML files for your services.
+## Development server
 
-## About This Repository
+Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
 
-This repository serves as a template for creating new projects. It provides a pre-configured structure and tools to streamline the setup process for Kubernetes-based deployments. The key features of this template include:
+## Code scaffolding
 
-- **Deployment YAML Generator**: A Bash script (`init.sh`) to generate Kubernetes deployment, service, and optional ingress configurations.
-- **Customizable Ingress**: Allows you to specify a subdomain for your service if ingress is required.
-- **GitHub Actions Workflow**: Automates the deployment of your service to a Kubernetes cluster.
+Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
 
-### How to Use This Template
+## Build
 
-1. **Clone or Use as a Template**:
-   - Clone this repository or use the "Use this template" button on GitHub to create a new repository based on this template.
+Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
 
-2. **Run the Deployment YAML Generator**:
-   - Follow the instructions in the [Deployment YAML Generator](#deployment-yaml-generator) section to generate Kubernetes configuration files for your project.
+## Running unit tests
 
-3. **Customize Your Project**:
-   - Update the generated YAML files or other configuration files as needed for your specific project requirements.
+Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
 
-4. **Set Up GitHub Actions Workflow**:
-   - This repository includes a pre-configured GitHub Actions workflow (`.github/workflows/deploy.yml`) to automate the deployment process.
+## Running end-to-end tests
 
-5. **Trigger the Workflow**:
-   - Push changes to the `main` branch to automatically deploy your service to the Kubernetes cluster.
+Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
 
-### Example Workflow
+## Further help
 
-The included GitHub Actions workflow (`deploy.yml`) uses the following configuration:
-
-```yaml
-name: Deploy to Kubernetes
-
-on:
-  push:
-    branches:
-      - main
-
-jobs:
-  deploy:
-    uses: TheClusterFlux/central-workflows/.github/workflows/deploy.yaml@main
-    with:
-      docker_image_name: your-dockerhub-username/your-service-name
-      deployment_file: deployment.yaml
-    secrets:
-      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      KUBECONFIG: ${{ secrets.KUBECONFIG }}
+To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.

@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: BigBrother
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: BigBrother
+  template:
+    metadata:
+      labels:
+        app: BigBrother
+    spec:
+      containers:
+        - name: BigBrother
+          image: docker.io/keanuwatts/theclusterflux:BigBrother
+          imagePullPolicy: Always
+      imagePullSecrets:
+        - name: dockerhub-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: BigBrother
+spec:
+  selector:
+    app: BigBrother
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: BigBrother
+  namespace: default
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - Bigbrother[D[D[D[D[D[B.theclusterflux.com
+    secretName: theclusterflux
+  rules:
+  - host: Bigbrother[D[D[D[D[D[B.theclusterflux.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: BigBrother
+            port:
+              number: 8080
