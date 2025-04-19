@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: big-brother
-          image: docker.io/keanuwatts/theclusterflux:big-brother
+          image: docker.io/keanuwatts/theclusterflux:BigBrother
           imagePullPolicy: Always
       imagePullSecrets:
         - name: dockerhub-secret
