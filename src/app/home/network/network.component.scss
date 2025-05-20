@@ -11,13 +11,21 @@
 }
 
 .circle {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.8), rgba(0, 0, 0, 0.5));
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
   width: 100px;
   height: 100px;
-  border-radius: 50%;
-  position: absolute;
   z-index: 10; // Increased z-index
-  transition: transform 0.1s ease-out; // Smooth movement
   border: 2px solid rgba(0, 0, 0, 0.2); // Thicker border
+}
+
+/* Add hover effect for circles */
+.circle:hover {
+  transform: scale(1.1);
+  cursor: pointer;
 }
 
 .circle0 {
@@ -58,4 +66,30 @@ svg line {
   transform: translate(-50%, -50%);
   pointer-events: none;
   text-shadow: 1px 1px 2px black;
+}
+
+/* Style the heatmap background */
+#heatmap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  background: url('/assets/ring.png') no-repeat center center;
+  background-size: cover;
+}
+
+/* Style the side panel */
+#side-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 300px;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 20px;
+  box-shadow: -4px 0 8px rgba(0, 0, 0, 0.2);
+  overflow-y: auto;
 }

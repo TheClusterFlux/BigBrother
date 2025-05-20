@@ -1,13 +1,169 @@
-<div class="slide-panel" [class.closed]="isPanelClosed">
-    <div class="user-info" *ngIf="currentUser">
-      <div class="header">
-        <img [src]="currentUser.avatar_url" alt="User avatar" />
-        <h2>{{ currentUser.display_name }}</h2>
+<div class="info-slide" [class.closed]="isPanelClosed">
+  <div class="panel-content" *ngIf="currentUser">
+    <!-- Header with user basic info -->
+    <div class="user-header">
+      <div class="profile-image-container">
+        <img [src]="currentUser.avatar" alt="Profile" class="profile-image">
+        <span class="status-indicator" [class]="currentUser.status"></span>
       </div>
-      <ul>
-        <li>{{ currentUser.status }}</li>
-        <li>{{ currentUser.presence }}</li>
-        <li>{{ currentUser.id }}</li>
-      </ul>
+      <div class="user-header-info">
+        <h2>{{currentUser.username}}</h2>
+        <div class="badge-container">
+          <span class="badge" *ngFor="let role of currentUser.roles.slice(0,2)">{{role}}</span>
+          <span class="badge more" *ngIf="currentUser.roles.length > 2">+{{currentUser.roles.length - 2}}</span>
+        </div>
+        <div class="activity-score">
+          <div class="progress">
+            <div class="progress-bar" [style.width]="getActivityScore() + '%'"></div>
+          </div>
+          <span>Activity Score: {{getActivityScore()}}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab navigation -->
+    <div class="tab-navigation">
+      <button [class.active]="activeTab === 'profile'" 
+              (click)="setActiveTab('profile')">Profile</button>
+      <button [class.active]="activeTab === 'activity'" 
+              (click)="setActiveTab('activity')">Activity</button>
+      <button [class.active]="activeTab === 'network'" 
+              (click)="setActiveTab('network')">Network</button>
+      <button [class.active]="activeTab === 'channels'" 
+              (click)="setActiveTab('channels')">Channels</button>
+    </div>
+
+    <!-- Tab content -->
+    <div class="tab-content">
+      <!-- Profile Tab -->
+      <div *ngIf="activeTab === 'profile'" class="tab-pane">
+        <div class="info-card">
+          <h3>Profile</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="label">ID</span>
+              <span class="value">{{currentUser.id}}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Discriminator</span>
+              <span class="value">#{{currentUser.discriminator}}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Joined</span>
+              <span class="value">{{formatDate(currentUser.joinedAt)}}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Last Online</span>
+              <span class="value">{{currentUser.lastOnlineDuration}} ago</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Bot</span>
+              <span class="value">{{currentUser.isBot ? 'Yes' : 'No'}}</span>
+            </div>
+            <div class="info-item full-width">
+              <span class="label">Roles</span>
+              <div class="roles-container">
+                <span class="role" *ngFor="let role of currentUser.roles">{{role}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activity Tab -->
+      <div *ngIf="activeTab === 'activity'" class="tab-pane">
+        <div class="info-card">
+          <h3>Voice Activity</h3>
+          <div class="voice-metrics">
+            <div class="metric" *ngFor="let channel of currentUser.channelData">
+              <div class="channel-name">{{channel.channelName}}</div>
+              <div class="time-spent">{{channel.durationInChannel}}</div>
+              <div class="last-connected">
+                <span class="label">Last connected:</span>
+                <span class="value">{{getTimeSince(channel.lastConnectionTime)}}</span>
+              </div>
+              <div class="progress">
+                <div class="progress-bar" [style.width]="'calc(' + channel.voiceActivity.totalTime + ' / 800h * 100%)'"></div>
+              </div>
+              <div class="total-time">Total: {{channel.voiceActivity.totalTime}}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Network Tab -->
+      <div *ngIf="activeTab === 'network'" class="tab-pane">
+        <div class="info-card">
+          <h3>Top Interactions</h3>
+          <div class="user-interactions">
+            <div class="interaction-card" *ngFor="let interaction of getTopInteractions(); let i = index">
+              <div class="interaction-rank">{{i + 1}}</div>
+              <div class="interaction-user">
+                <div class="interaction-name">{{interaction.username}}</div>
+                <div class="interaction-metrics">
+                  <div class="interaction-time">
+                    <span class="label">Time together:</span>
+                    <span class="value">{{(interaction.interactionTime / 3600000).toFixed(1)}} hours</span>
+                  </div>
+                  <div class="last-seen">
+                    <span class="label">Last seen:</span>
+                    <span class="value">{{getTimeSince(interaction.lastSeenTogether)}}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="interaction-favorite">
+                <div class="channel-bubble">
+                  <span class="label">Favorite channel:</span>
+                  <span class="channel">{{interaction.favoriteChannel.channelName}}</span>
+                  <span class="time">{{interaction.favoriteChannel.timeSpent}}</span>
+                </div>
+              </div>
+              <div class="interaction-frequency">{{interaction.interactionFrequency}}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-card interaction-stats">
+          <h3>Interaction Stats</h3>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-value">{{currentUser.userData?.length || 0}}</div>
+              <div class="stat-label">Total Connections</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">{{formatDate(currentUser.userData[0]?.firstInteraction || '')}}</div>
+              <div class="stat-label">First Interaction</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Channels Tab -->
+      <div *ngIf="activeTab === 'channels'" class="tab-pane">
+        <div class="info-card">
+          <h3>Channel Activity</h3>
+          <div class="channel-grid">
+            <div class="channel-card" *ngFor="let channel of currentUser.channelData">
+              <div class="channel-header">
+                <h4>{{channel.channelName}}</h4>
+                <div class="channel-id">#{{channel.channelId}}</div>
+              </div>
+              <div class="channel-metric">
+                <span class="label">Time spent:</span>
+                <span class="value">{{channel.durationInChannel}}</span>
+              </div>
+              <div class="channel-metric">
+                <span class="label">Last active:</span>
+                <span class="value">{{getTimeSince(channel.lastConnectionTime)}}</span>
+              </div>
+              <div class="channel-metric">
+                <span class="label">Voice activity:</span>
+                <span class="value">{{channel.voiceActivity.totalTime}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+</div>
