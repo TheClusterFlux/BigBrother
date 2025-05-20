@@ -6,9 +6,10 @@ import {
   ElementRef,
   ViewEncapsulation,
   Output,
+  Inject,
 } from '@angular/core';
 import { Circle } from '../Classes/circle';
-import { User } from '../Models/user.model';
+import { DiscordServer, mockServerData, ServerMember } from '../Models/server.model';
 import { EventEmitter } from '@angular/core';
 
 @Component({
@@ -19,10 +20,12 @@ import { EventEmitter } from '@angular/core';
 })
 export class NetworkComponent implements OnInit, OnDestroy {
   @ViewChild('container', { static: true }) containerRef!: ElementRef;
-  @Output() public infoSliderEmitter: EventEmitter<any> = new EventEmitter<any>();
+  @Output() public infoSliderEmitter: EventEmitter<any> =
+    new EventEmitter<any>();
   public isPanelClosed = false;
   private circles: Circle[] = [];
   private animationId: number = 0;
+  private discordServers: DiscordServer[] = Array.isArray(mockServerData) ? mockServerData : [mockServerData];
   screenWidth = window.innerWidth;
   screenHeight = window.innerHeight;
   radius = 50;
@@ -55,7 +58,7 @@ export class NetworkComponent implements OnInit, OnDestroy {
     }
   }
 
-  private createCircles(users: User[]) {
+  private createCircles(users: ServerMember[]) {
     const circles = [];
     for (let i = 0; i < 5; i++) {
       for (const user of users) {
@@ -92,19 +95,19 @@ export class NetworkComponent implements OnInit, OnDestroy {
     this.circles.forEach((circle) => {
       if (circle.x - circle.radius < 0) {
         circle.x = circle.radius;
-        circle.vx = Math.max(circle.vx, circle.minSpeed);
+        circle.vx = Math.abs(circle.vx); // Ensure velocity is positive
       }
       if (circle.x + circle.radius > this.screenWidth) {
         circle.x = this.screenWidth - circle.radius;
-        circle.vx = Math.min(circle.vx, -circle.minSpeed);
+        circle.vx = -Math.abs(circle.vx); // Ensure velocity is negative
       }
       if (circle.y - circle.radius < 0) {
         circle.y = circle.radius;
-        circle.vy = Math.max(circle.vy, circle.minSpeed);
+        circle.vy = Math.abs(circle.vy); // Ensure velocity is positive
       }
       if (circle.y + circle.radius > this.screenHeight) {
         circle.y = this.screenHeight - circle.radius;
-        circle.vy = Math.min(circle.vy, -circle.minSpeed);
+        circle.vy = -Math.abs(circle.vy); // Ensure velocity is negative
       }
       circle.applyPosition();
     });
@@ -122,7 +125,7 @@ export class NetworkComponent implements OnInit, OnDestroy {
     document.body.appendChild(sidePanel);
 
     this.heightmap.crossOrigin = 'Anonymous'; // Allow cross-origin requests
-    this.heightmap.src = '../assets/ring.png';
+    this.heightmap.src = 'assets/ring.png';
     this.heightmap.onload = () => {
       const ctx = this.heightmapCanvas.getContext('2d');
       if (!ctx) {
@@ -150,85 +153,67 @@ export class NetworkComponent implements OnInit, OnDestroy {
   }
 
   private animate() {
-    this.circles.forEach((circle) => {
+    this.circles.forEach((circle, index) => {
       circle.update(
         this.heightmapData,
         this.heightmapCanvas.width,
         this.heightmapCanvas.height,
         this.circles
       );
+
+      // Smooth collision handling
+      for (let i = index + 1; i < this.circles.length; i++) {
+        const otherCircle = this.circles[i];
+        const dx = circle.x - otherCircle.x;
+        const dy = circle.y - otherCircle.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const minDistance = circle.radius + otherCircle.radius;
+
+        if (distance < minDistance) {
+          const angle = Math.atan2(dy, dx);
+          const overlap = minDistance - distance;
+
+          // Push circles apart
+          circle.x += (overlap / 2) * Math.cos(angle);
+          circle.y += (overlap / 2) * Math.sin(angle);
+          otherCircle.x -= (overlap / 2) * Math.cos(angle);
+          otherCircle.y -= (overlap / 2) * Math.sin(angle);
+
+          // Adjust velocities for smoother bounce
+          const tempVx = circle.vx;
+          const tempVy = circle.vy;
+          circle.vx = otherCircle.vx * 0.8; // Reduce speed slightly on collision
+          circle.vy = otherCircle.vy * 0.8;
+          otherCircle.vx = tempVx * 0.8;
+          otherCircle.vy = tempVy * 0.8;
+        }
+      }
     });
-    requestAnimationFrame(() => this.animate());
+    this.animationId = requestAnimationFrame(() => this.animate());
   }
 
-  private async fetchUsers(): Promise<User[]> {
+  private async fetchUsers(): Promise<ServerMember[]> {
     try {
-      // const response = await fetch('http://localhost:3000/users', {
-      //   method: 'GET',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      // });
-
-      // if (!response.ok) {
-      //   throw new Error('Network response was not ok');
-      // }
-
-      // const users = await response.json();
-      const users = [
-        {
-          id: 1,
-          username: "john_doe",
-          status: "Active",
-          avatar_url: "assets/fakeProfileImages/Profile1.jpg",
-          created_at: "2025-01-15T10:00:00Z",
-          display_name: "John Doe",
-          presence: "Online"
-        },
-        {
-          id: 2,
-          username: "jane_smith",
-          status: "Inactive",
-          avatar_url: "assets/fakeProfileImages/Profile2.jpg",
-          created_at: "2025-02-20T14:30:00Z",
-          display_name: "Jane Smith",
-          presence: "Offline"
-        },
-        {
-          id: 3,
-          username: "alice_wonder",
-          status: "Active",
-          avatar_url: "assets/fakeProfileImages/Profile3.jpg",
-          created_at: "2025-03-10T08:45:00Z",
-          display_name: "Alice Wonder",
-          presence: "Away"
-        },
-        {
-          id: 4,
-          username: "bob_builder",
-          status: "Active",
-          avatar_url: "assets/fakeProfileImages/Profile4.jpg",
-          created_at: "2025-04-01T12:00:00Z",
-          display_name: "Bob Builder",
-          presence: "Online"
-        },
-        {
-          id: 5,
-          username: "charlie_brown",
-          status: "Inactive",
-          avatar_url: "assets/fakeProfileImages/Profile5.jpg",
-          created_at: "2025-05-05T16:15:00Z",
-          display_name: "Charlie Brown",
-          presence: "Offline"
-        }
-      ];
-
-      if (!Array.isArray(users)) {
-        throw new Error('Expected an array of users');
+      // Check if we have Discord servers injected
+      if (!this.discordServers || this.discordServers.length === 0) {
+        console.error('No Discord servers available');
+        return [];
       }
-      return users;
+
+      // Get members from the first server
+      // You could also combine members from multiple servers if needed
+      const serverMembers = this.discordServers[0].members;
+      
+      // Validate that we have an array of members
+      if (!Array.isArray(serverMembers)) {
+        console.error('Expected an array of server members');
+        return [];
+      }
+      
+      console.log(`Successfully retrieved ${serverMembers.length} members from server "${this.discordServers[0].name}"`);
+      return serverMembers;
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error('Error fetching server members:', error);
       return [];
     }
   }
@@ -239,8 +224,10 @@ export class NetworkComponent implements OnInit, OnDestroy {
     });
   }
 
-  private createCircle(x: number, y: number, radius: number, user: User) {
+  private createCircle(x: number, y: number, radius: number, user: ServerMember) {
     const circle = new Circle(x, y, radius, user);
+    circle.minSpeed = 0.3; // Set a minimum speed for smoother movement
+    circle.maxSpeed = 1.0; // Set a maximum speed for smoother movement
     this.initializeCircleEvents(circle);
     return circle;
   }
