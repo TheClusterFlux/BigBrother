@@ -1,0 +1,30 @@
+# Node modules and dependencies
+node_modules
+npm-debug.log
+
+# Git files
+.git
+.gitignore
+
+# Development files
+*.md
+.editorconfig
+.vscode
+*.spec.ts
+
+# Build files
+/dist
+/tmp
+/out-tsc
+
+# Environment variables
+.env
+
+# Docker files
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Miscellaneous
+.DS_Store
+Thumbs.db
